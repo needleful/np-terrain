@@ -1,0 +1,646 @@
+# NP-Terrain
+&a
++
+_
+m3
+- Visualize
+	p0
+	i1
+	x
+	- Make a plane
+		p0
+		i2
+		x
+	- Write to a texture
+		p0
+		i23
+		x
+	- Generate normals
+		p0
+		i24
+		x
+	- Read height
+		p0
+		i5
+		x
+- Collision
+	p1
+	i3
+	- Multiple mesh instances
+		p0
+		i6
+		x
+	- Generate a heightmap
+		p0
+		i78
+		x
+	- Test collision performance
+		p1
+		i79
+		- If slow, test splitting into several heightmaps
+			p1
+			i135
+- Editing
+	p1
+	i9
+	- Grouping
+		p1
+		i10
+		x
+	- Rotating
+		p1
+		i11
+		x
+	- Scaling
+		p1
+		i12
+		x
+	- Paths
+		p1
+		i28
+		- Draw line segments directly onto the heightmap
+			p1
+			i272
+		- Parameters
+			p1
+			i273
+			- Falloff
+				p1
+				i274
+			- Blend
+				p1
+				i275
+			- Opacity
+				p1
+				i276
+			- Noise
+				p1
+				i277
+			- Radius
+				p1
+				i278
+				- Dictates how many segments are drawn
+					p1
+					i279
+	- Blend modes
+		p1
+		i33
+		x
+		- Additive
+			p0
+			i27
+			x
+		- Min
+			p1
+			i34
+			x
+		- Max
+			p1
+			i35
+			x
+	- Duplicating
+		p0
+		i36
+	- Holes
+		p0
+		i77
+		x
+	- Several materials
+		p1
+		i80
+	- Do I even need min and max height?
+		p1
+		i598
+	- Resize heightmaps
+		p1
+		i600
+		- By scaling up image
+			p1
+			i601
+		- By scaling the canvas area
+			p1
+			i602
+	- Ability to enable and disable elements
+		p1
+		i741
+- Painting
+	p1
+	i13
+	- Highlight selected heightmap
+		p1
+		i112
+		x
+		- Get the box
+			p1
+			i113
+			x
+		- Render a cube with some sort of depth-based shader
+			p1
+			i114
+			x
+	- Ability to save a unique copy of the stamp
+		p1
+		i125
+		x
+	- A shader to render a line on top of the stamp
+		p1
+		i126
+		x
+		- Start and end points in 2d
+			p1
+			i127
+			x
+		- Radius
+			p1
+			i128
+			x
+		- Falloff curve
+			p1
+			i129
+			x
+		- Render onto the stamp image
+			p1
+			i131
+			x
+		- Color
+			p1
+			i136
+			x
+			- RGA
+				p1
+				i138
+				x
+	- Some sort of UI when painting
+		p1
+		i140
+		x
+	- Preview painting
+		p1
+		i189
+		x
+		- Position
+			p1
+			i190
+			x
+		- Radius
+			p1
+			i191
+			x
+	- Separate rendering of lines for a given stamp from the rest of the rendering
+		p1
+		i139
+		x
+	- Ability to save edited stamp and clear lines
+		p1
+		i141
+		x
+	- Draw lines every frame while the mouse is pressed and editing is enabled
+		p1
+		i132
+		x
+	- UI: toolbar for setting the desired parameters
+		p1
+		i133
+		- Radius
+			p1
+			i201
+			x
+		- Color
+			p1
+			i202
+			x
+		- Falloff: Curve UI
+			p1
+			i203
+		- Maybe a preview of the brush shape?
+			p1
+			i370
+	- Ability to detect 3D position from depth on CPU
+		p1
+		i130
+	- Add undo/redo
+		p1
+		i192
+	- Blend modes
+		p1
+		i193
+		/Focus on making blend modes like the typical terrain editor.
+		- Raw
+			p1
+			i374
+			- Mix: What we have
+				p1
+				i383
+			- Add
+				p1
+				i384
+			- Subtract
+				p1
+				i387
+			- Max
+				p1
+				i388
+			- Min
+				p1
+				i389
+		- Raise/lower
+			p1
+			i375
+			- Left click: add red
+				p1
+				i380
+			- Right click: subtract red
+				p1
+				i381
+		- Strengthen/Weaken opacity
+			p1
+			i379
+			- Left click: Add green
+				p1
+				i386
+			- Right click: Subtract green
+				p1
+				i390
+		- Smooth/ Flatten
+			p1
+			i377
+			- Left click: Average of the entire area
+				p1
+				i382
+			- Right click: bring toward the height at the center of the circle
+				p1
+				i385
+		- Channel controls
+			p1
+			i391
+			- Just height
+				p1
+				i392
+			- Just opacity
+				p1
+				i393
+			- Both
+				p1
+				i394
+	- Extra effects
+		p1
+		i206
+		- Blur
+			p1
+			i207
+		- Erode
+			p1
+			i208
+		- Random noise
+			p1
+			i220
+	- Paint holes
+		p1
+		i211
+	- Improve line algorithm
+		p1
+		i221
+		x
+		- Do I need to account for the previous and next line segments somehow?
+			p1
+			i222
+			x
+		- Transparency is handled especially poorly across segments
+			p1
+			i396
+			x
+- Bugs
+	p1
+	i18
+	- Update terrain when deleting node
+		p1
+		i19
+	- Properly set AABB
+		p1
+		i53
+	- Flickering while moving
+		p1
+		i66
+		x
+		- Is it because I'm recreating the Texture2DRD every frame?
+			p1
+			i115
+			x
+	- Flickering in specific circumstances
+		p1
+		i460
+		/If we move a terrain stamp,
+		/- SOME heightmaps are rendered
+		/- The normals are rendered
+		/- Some heightmaps are black
+		/- Some are flat
+		/It's order-sensitive, and doesn't happen when we move a whole group.
+		- Painting is especially bad
+			p1
+			i461
+		- For some reason ONE SPECIFIC CONFIGURATION of groups works
+			p1
+			i462
+	- Y-scale should be inverted
+		p1
+		i67
+	- Scale of bounding rectangles isn't quite right
+		p2
+		i123
+		;performance
+		- Seems to be an issue for children of groups
+			p2
+			i124
+	- Renderer becomes nil when moving between tabs
+		p1
+		i204
+	- start and stop plugin to get editor widget working
+		p1
+		i205
+	- Sometimes the painted value forgets some strokes - buffer swap issue?
+		p1
+		i533
+	- Breaks when switching tabs
+		p1
+		i534
+		/_enter_tree, _exit_tree, and _ready
+	- Strange behavior when paint stroke goes near itself
+		p1
+		i535
+	- NPTerrainPath renders weird
+		p1
+		i744
+- Performance
+	p1
+	i20
+	x
+	- Tile chunking
+		p1
+		i21
+		x
+	- Only run shader on relevant span
+		p1
+		i22
+		x
+	- Proper AABB for meshes
+		p1
+		i29
+		x
+	- 16-bit floats?
+		p1
+		i32
+		x
+	- Do not get data from the GPU until confirming
+		p1
+		i62
+		x
+		/Figure out how to get the image data for the terrain shader.
+		/Then add a button to convert the data for the heighmap
+- Workflow
+	p1
+	i30
+	- How to make nice, smooth heightmaps?
+		p1
+		i31
+- LOD
+	p1
+	i61
+	- Finite number of terrain meshes
+		p1
+		i228
+	- Quadtree or something
+		p1
+		i229
+	- Generate mip-maps for textures?
+		p1
+		i231
+	- Disable holes when far away
+		p1
+		i232
+- Scale
+	p1
+	i116
+	x
+	- Scaling up terrain with the same resolution
+		p1
+		i117
+		x
+		- Regenerate meshes
+			p1
+			i118
+			x
+		- Generate heightmap scaled properly
+			p1
+			i119
+			x
+		- Scale up collider
+			p1
+			i120
+			x
+			- Scale up the entire collider. Must be uniform
+				p1
+				i122
+				x
+- Resizing stamps
+	p1
+	i212
+	- Expand bounds
+		p1
+		i213
+	- Upsample/downsample
+		p1
+		i214
+- Selections
+	p1
+	i215
+	- UI
+		p1
+		i219
+	- Copy
+		p1
+		i217
+	- Paste
+		p1
+		i218
+	- Cut
+		p1
+		i216
+- Materials and textures
+	p1
+	i224
+	- Allow for arbitrary RGBA layers
+		p1
+		i225
+		- 32, 16, or 8-bit
+			p1
+			i226
+	- Shaders can take whatever maps they want
+		p1
+		i227
+- Advanced features
+	p1
+	i233
+	- Select a stamp by clicking on the terrain
+		p1
+		i234
+		- Encode an ID to a map
+			p1
+			i235
+		- Sample that map
+			p1
+			i236
+- Today's Goals
+	p1
+	i456
+	x
+	- Fix the flickering
+		p1
+		i457
+		x
+	- Fix the flickering for real
+		p1
+		i463
+		x
+	- Improve the painting
+		p1
+		i458
+		x
+		- Split strokes into 2 phases
+			p1
+			i464
+			x
+			- Stroke compositor
+				p1
+				i465
+				x
+				- Create a 1-channel buffer, same size as the stamp
+					p1
+					i466
+					x
+					- Clear to black
+						p1
+						i469
+						x
+				- For each line in the stroke:
+					p1
+					i467
+					x
+					- Subtract the opacity of the starting point (clamp to 0)
+						p1
+						i468
+						x
+					- Add the opacity of the whole line
+						p1
+						i470
+						x
+			- Apply stroke to stamp
+				p1
+				i472
+				x
+				- Take the color of the brush and composed opacity and combine
+					p1
+					i473
+					x
+	- Arbitrary color maps
+		p1
+		i517
+		x
+		- How do I want this system to work?
+			p1
+			i518
+			x
+			- How do you create new maps?
+				p1
+				i519
+				x
+			- How do you store them?
+				p1
+				i520
+				x
+			- How do you edit them?
+				p1
+				i521
+				x
+			- How do you view them?
+				p1
+				i522
+				x
+	- Painting: blend modes
+		p1
+		i523
+		x
+		- Min
+			p1
+			i525
+			x
+		- Max
+			p1
+			i526
+			x
+		- Add
+			p1
+			i527
+			x
+		- Subtract
+			p1
+			i528
+			x
+		- Erase
+			p1
+			i530
+			x
+			- Height mode: remove green
+				p1
+				i531
+				x
+			- Paint mode: remove alpha
+				p1
+				i532
+				x
+- Today's agenda:
+	p1
+	i735
+	- Paths
+		p1
+		i736
+		- Two stroke properties, lerped
+			p1
+			i737
+			x
+			- Start and end properties
+				p1
+				i738
+				x
+			- Each line segment gets one set of properties, by its midpoint along the curve
+				p1
+				i739
+				x
+		- Heightmaps
+			p1
+			i746
+			- Fix weird alpha issues
+				p1
+				i748
+			- Fix bug when intersecting zero
+				p1
+				i749
+		- Attributes
+			p1
+			i747
+		- Fix start and end point interpoation
+			p1
+			i750
+			- make start_factor read the starting attenuation and radius, not the current one
+				p1
+				i751
+	- Fix the one billion errors at startup
+		p1
+		i742
+		x
+	- Move heightmap buttons to the top bar
+		p1
+		i743
+		x
+- New Task
+	p1
+	i745
