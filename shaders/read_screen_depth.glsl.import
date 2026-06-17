@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://dmxvljtysxo7m"
+path="res://.godot/imported/read_screen_depth.glsl-8d5975e4e02416b4e25b5a2e61f2b373.res"
+
+[deps]
+
+source_file="res://addons/np-terrain/shaders/read_screen_depth.glsl"
+dest_files=["res://.godot/imported/read_screen_depth.glsl-8d5975e4e02416b4e25b5a2e61f2b373.res"]
+
+[params]
+

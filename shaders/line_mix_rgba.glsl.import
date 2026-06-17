@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://bks5qaxy1o6c5"
+path="res://.godot/imported/line_mix_rgba.glsl-a5e58383840714400aff425f735d35b8.res"
+
+[deps]
+
+source_file="res://addons/np-terrain/shaders/line_mix_rgba.glsl"
+dest_files=["res://.godot/imported/line_mix_rgba.glsl-a5e58383840714400aff425f735d35b8.res"]
+
+[params]
+

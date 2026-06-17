@@ -1,0 +1,14 @@
+[remap]
+
+importer="image"
+type="Image"
+uid="uid://bs5sps7cmeap"
+path="res://.godot/imported/bowl-256.png-52e00162a7bb22d4fb7639d5762368ca.image"
+
+[deps]
+
+source_file="res://addons/np-terrain/sample_maps/bowl-256.png"
+dest_files=["res://.godot/imported/bowl-256.png-52e00162a7bb22d4fb7639d5762368ca.image"]
+
+[params]
+

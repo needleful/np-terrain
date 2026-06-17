@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://20j8ocbvpqlm"
+path="res://.godot/imported/line_mix_opacity.glsl-eea0085cb276a41fd673b8072f9d46f9.res"
+
+[deps]
+
+source_file="res://addons/np-terrain/shaders/line_mix_opacity.glsl"
+dest_files=["res://.godot/imported/line_mix_opacity.glsl-eea0085cb276a41fd673b8072f9d46f9.res"]
+
+[params]
+

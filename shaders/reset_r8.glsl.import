@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://ci34lrjfxwutf"
+path="res://.godot/imported/reset_r8.glsl-f779f46024690c627bdcc14e4381b4ae.res"
+
+[deps]
+
+source_file="res://addons/np-terrain/shaders/reset_r8.glsl"
+dest_files=["res://.godot/imported/reset_r8.glsl-f779f46024690c627bdcc14e4381b4ae.res"]
+
+[params]
+

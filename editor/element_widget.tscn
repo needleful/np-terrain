@@ -1,0 +1,136 @@
+[gd_scene load_steps=8 format=3 uid="uid://cmmw8wdl01k0x"]
+
+[ext_resource type="Script" uid="uid://bqciy1n0war1r" path="res://addons/np-terrain/editor/element_widget.gd" id="1_oyuuo"]
+[ext_resource type="Script" uid="uid://c71snivmpslrr" path="res://addons/np-terrain/editor/nice_slider.gd" id="2_x33r2"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_oyuuo"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_x33r2"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_xuk8h"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_3x4wr"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_8i6os"]
+
+[node name="ElementWidget" type="HBoxContainer" node_paths=PackedStringArray("color_picker", "radius_slider", "falloff_slider")]
+offset_right = 13.0
+offset_bottom = 23.0
+size_flags_horizontal = 0
+script = ExtResource("1_oyuuo")
+color_picker = NodePath("EditMenu/EditPanel/VBoxContainer/ColorPickerButton")
+radius_slider = NodePath("EditMenu/EditPanel/VBoxContainer/radius")
+falloff_slider = NodePath("EditMenu/EditPanel/VBoxContainer/falloff")
+
+[node name="MenuButton" type="MenuButton" parent="."]
+layout_mode = 2
+text = "Actions"
+item_count = 3
+popup/item_0/text = "Save Stamp"
+popup/item_0/id = 0
+popup/item_1/text = "Redraw All"
+popup/item_1/id = 1
+popup/item_2/text = "Save All"
+popup/item_2/id = 2
+
+[node name="EditMenu" type="Button" parent="."]
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxEmpty_oyuuo")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_x33r2")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_xuk8h")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_3x4wr")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_8i6os")
+disabled = true
+text = "Paint Settings"
+
+[node name="EditPanel" type="PopupPanel" parent="EditMenu"]
+oversampling_override = 1.0
+position = Vector2i(65, 25)
+size = Vector2i(250, 207)
+
+[node name="VBoxContainer" type="GridContainer" parent="EditMenu/EditPanel"]
+offset_left = 4.0
+offset_top = 4.0
+offset_right = 246.0
+offset_bottom = 203.0
+theme_override_constants/h_separation = 15
+columns = 2
+
+[node name="Color" type="Label" parent="EditMenu/EditPanel/VBoxContainer"]
+layout_mode = 2
+text = "Color"
+
+[node name="ColorPickerButton" type="ColorPickerButton" parent="EditMenu/EditPanel/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+color = Color(1, 1, 0, 0.49411765)
+
+[node name="Radius" type="Label" parent="EditMenu/EditPanel/VBoxContainer"]
+layout_mode = 2
+text = "Radius"
+
+[node name="radius" type="VBoxContainer" parent="EditMenu/EditPanel/VBoxContainer"]
+layout_mode = 2
+alignment = 1
+script = ExtResource("2_x33r2")
+curve = 2.0
+
+[node name="Label" type="Label" parent="EditMenu/EditPanel/VBoxContainer/radius"]
+layout_mode = 2
+text = "16.00"
+
+[node name="HSlider" type="HSlider" parent="EditMenu/EditPanel/VBoxContainer/radius"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 1
+min_value = 0.5
+max_value = 32.0
+step = 0.01
+value = 4.0
+
+[node name="Label" type="Label" parent="EditMenu/EditPanel/VBoxContainer"]
+layout_mode = 2
+text = "Falloff"
+
+[node name="falloff" type="VBoxContainer" parent="EditMenu/EditPanel/VBoxContainer"]
+layout_mode = 2
+alignment = 1
+script = ExtResource("2_x33r2")
+curve = 2.0
+
+[node name="Label" type="Label" parent="EditMenu/EditPanel/VBoxContainer/falloff"]
+layout_mode = 2
+text = "1.00"
+
+[node name="HSlider" type="HSlider" parent="EditMenu/EditPanel/VBoxContainer/falloff"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 1
+min_value = 0.01
+max_value = 10.0
+step = 0.0
+value = 1.0
+
+[node name="Label2" type="Label" parent="EditMenu/EditPanel/VBoxContainer"]
+layout_mode = 2
+text = "Raw Mode"
+
+[node name="raw_blend_mode" type="OptionButton" parent="EditMenu/EditPanel/VBoxContainer"]
+layout_mode = 2
+selected = 0
+item_count = 6
+popup/item_0/text = "Mix"
+popup/item_0/id = 0
+popup/item_1/text = "Add"
+popup/item_1/id = 1
+popup/item_2/text = "Min"
+popup/item_2/id = 2
+popup/item_3/text = "Max"
+popup/item_3/id = 3
+popup/item_4/text = "Erase"
+popup/item_4/id = 4
+popup/item_5/text = "Subtract"
+popup/item_5/id = 5
+
+[node name="editing" type="CheckButton" parent="."]
+layout_mode = 2

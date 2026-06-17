@@ -1,0 +1,14 @@
+[remap]
+
+importer="image"
+type="Image"
+uid="uid://covywrm3i0bf8"
+path="res://.godot/imported/hole.png-4f0be28d33cd0e9e9b9b78dcf7aebe8d.image"
+
+[deps]
+
+source_file="res://addons/np-terrain/sample_maps/hole.png"
+dest_files=["res://.godot/imported/hole.png-4f0be28d33cd0e9e9b9b78dcf7aebe8d.image"]
+
+[params]
+

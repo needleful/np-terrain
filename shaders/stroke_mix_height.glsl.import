@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://ilhrwgekuxch"
+path="res://.godot/imported/stroke_mix_height.glsl-20eb470dfbd04d8dcbf270009f310312.res"
+
+[deps]
+
+source_file="res://addons/np-terrain/shaders/stroke_mix_height.glsl"
+dest_files=["res://.godot/imported/stroke_mix_height.glsl-20eb470dfbd04d8dcbf270009f310312.res"]
+
+[params]
+

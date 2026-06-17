@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://6hwtjhwvfypm"
+path="res://.godot/imported/create_collider.glsl-01280f78104d3f9f30230a6b2d3f5eec.res"
+
+[deps]
+
+source_file="res://addons/np-terrain/shaders/create_collider.glsl"
+dest_files=["res://.godot/imported/create_collider.glsl-01280f78104d3f9f30230a6b2d3f5eec.res"]
+
+[params]
+

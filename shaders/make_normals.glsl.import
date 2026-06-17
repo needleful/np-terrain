@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://bnvmcvckkn4bb"
+path="res://.godot/imported/make_normals.glsl-ad927551a0bfd9f0ff286c16645ad567.res"
+
+[deps]
+
+source_file="res://addons/np-terrain/shaders/make_normals.glsl"
+dest_files=["res://.godot/imported/make_normals.glsl-ad927551a0bfd9f0ff286c16645ad567.res"]
+
+[params]
+

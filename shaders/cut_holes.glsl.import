@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://c0om4hodmoryy"
+path="res://.godot/imported/cut_holes.glsl-802b8d680f243bcb82e9131dc1fe48e9.res"
+
+[deps]
+
+source_file="res://addons/np-terrain/shaders/cut_holes.glsl"
+dest_files=["res://.godot/imported/cut_holes.glsl-802b8d680f243bcb82e9131dc1fe48e9.res"]
+
+[params]
+

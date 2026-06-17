@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://2j1j07iokire"
+path="res://.godot/imported/stroke_mix_rgba.glsl-5e353f5b162f64cd454bd5cc0267ea6c.res"
+
+[deps]
+
+source_file="res://addons/np-terrain/shaders/stroke_mix_rgba.glsl"
+dest_files=["res://.godot/imported/stroke_mix_rgba.glsl-5e353f5b162f64cd454bd5cc0267ea6c.res"]
+
+[params]
+
