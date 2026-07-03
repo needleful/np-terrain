@@ -295,7 +295,7 @@ func _save_element(e: NPTerrainGroup) -> bool:
 		e.image = Image.create_from_data(s.x, s.y, false, e._get_format(), bytes)
 		e.strokes.clear()
 		renderer.free_result(e)
-		var path := 'terrain_stamps/stamp_%s_%d.res' % [e.name, hash(e.get_path())]
+		var path := '%s/terrain_stamps/stamp_%s_%d.res' % [_get_output_folder(), e.name, hash(e.get_path())]
 		var err := ResourceSaver.save(e.image, path)
 		if err == OK:
 			e.image = ResourceLoader.load(path, 'Image', ResourceLoader.CACHE_MODE_REPLACE)
@@ -324,7 +324,7 @@ func _save():
 		_save_element(h)
 	for at in el.attributes:
 		for s in el.get_attribute_editors(at):
-			_save_element(s) 
+			_save_element(s)
 	result_heightmap = _save_image_as(renderer.get_result(), result_heightmap, Image.FORMAT_RF, 'heightmap')
 	result_normal_map = _save_image_as(renderer.get_normals(), result_normal_map, Image.FORMAT_RGH, 'normals')
 	result_hole_map = _save_image_as(renderer.get_holes(), result_hole_map, Image.FORMAT_R8, 'holes')
@@ -343,8 +343,14 @@ func _save_image_as(buffer: PackedByteArray, image: ImageTexture, format: int, p
 		Image.create_from_data(output_resolution.x, output_resolution.y, false, format, buffer))
 	return _save_resource(it, p_name)
 
+func _get_output_folder() -> String:
+	return ProjectSettings.get_setting('np_terrain/output', '_npt_output')
+
 func _save_resource(it: Resource, p_name: String):
-	var path := 'res://output/%s_%s.res' % [name, p_name]
+	var dir := 'res://%s' % _get_output_folder()
+	if not DirAccess.dir_exists_absolute(dir):
+		DirAccess.make_dir_absolute(dir)
+	var path := '%s/%s_%s.res' % [dir, name, p_name]
 	ResourceSaver.save(it, path)
 	print('Saving to ', path)
 	return ResourceLoader.load(path, '', ResourceLoader.CACHE_MODE_REPLACE)

@@ -219,11 +219,13 @@ func _begin_path(e: NPTerrainPath):
 	e.result_size = size*e.resolution
 	e.result_image = _local_texture(RenderingDevice.DATA_FORMAT_R32G32B32A32_SFLOAT, e.result_size)
 	_reset(reset_rgba_shader, e.result_image, e.result_size)
-	var points := e.path.curve.get_baked_points()
+	var points := e.path.curve.tessellate()
 	var start:NPPaintPoint = e.path_start
 	var end: NPPaintPoint
 	if e.path_end:
 		end = e.path_end
+	else:
+		end = start
 	var stroke := NPPaintStroke.new()
 	var t := e.global_transform
 	var inv := e.get_heightmap().global_transform.inverse().scaled_local(

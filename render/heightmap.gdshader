@@ -5,5 +5,6 @@ render_mode world_vertex_coords;
 
 void fragment() {
 	//ALBEDO = NORMAL;
+	ROUGHNESS = 0.3;
 	ALBEDO = (COLOR * color).rgb;
 }

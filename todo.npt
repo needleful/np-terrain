@@ -82,6 +82,17 @@ m3
 				- Dictates how many segments are drawn
 					p1
 					i279
+		- Respect heightmap scale
+			p1
+			i889
+		- Line segments need to smoothly blend start and end properties
+			p1
+			i890
+			/Don't use the midpoint.
+		- Respect path resolution scale
+			p1
+			i891
+			/Changing resolution should not affect other properties in world-scale.
 	- Blend modes
 		p1
 		i33
