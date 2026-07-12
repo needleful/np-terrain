@@ -18,7 +18,7 @@ enum Mode {
 		if p:
 			p.changed.connect(path_changed.emit.bind(self))
 		path_start = p
-		path_changed.emit()
+		path_changed.emit(self)
 ## Properties of the path at the end.
 ## If null, it's the same as the start.
 ## If there's a unique path, it will gradually shift from one to the other
@@ -29,7 +29,7 @@ enum Mode {
 		if p:
 			p.changed.connect(path_changed.emit.bind(self))
 		path_end = p
-		path_changed.emit()
+		path_changed.emit(self)
 
 @export var mode := Mode.HeightMap:
 	set(m):

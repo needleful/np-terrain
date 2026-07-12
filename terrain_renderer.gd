@@ -227,6 +227,7 @@ func _begin_path(e: NPTerrainPath):
 	else:
 		end = start
 	var stroke := NPPaintStroke.new()
+	var stroke2 := NPPaintStroke.new()
 	var t := e.global_transform
 	var h := e.get_heightmap()
 	var inv := h.global_transform.inverse().scaled_local(
@@ -239,16 +240,19 @@ func _begin_path(e: NPTerrainPath):
 	for p in point_count:
 		var from := inv*t*points[p]
 		var to := inv*t*points[p+1]
-		var middle := (from+to)/2
 		var offset := float(p)/s
+		var offset2 := float(p+1)/s
 		var properties := start.lerp(end, offset)
+		var properties2 := start.lerp(end, offset2)
 		if e.mode == NPTerrainPath.Mode.HeightMap:
-			properties.color = Color(middle.y, 0, 0, properties.color.a)
+			properties.color = Color(from.y, 0, 0, properties.color.a)
+			properties2.color = Color(to.y, 0, 0, properties2.color.a)
 		#print('-- Path: {%s to %s}: %s, %f, %f' % [str(from), str(to), str(properties.color), properties.attenuation, properties.radius])
 		var from2 := Vector2(from.x, from.z) + hsize
 		var to2 := Vector2(to.x, to.z) + hsize
 		stroke.set_properties(properties, from2, to2)
-		_line_mix(e, stroke)
+		stroke2.set_properties(properties2, from2, to2)
+		_line_mix(e, stroke, stroke2)
 
 func convert_path(e: NPTerrainPath):
 	work_queue.append(_convert_path.bind(e))
@@ -311,7 +315,7 @@ func _start_stroke(e: NPTerrainStamp, s: NPPaintStroke):
 	_reset(reset_shader, e.composited_stroke, e.image.get_size())
 
 func render_stroke_line(e: NPTerrainStamp, s: NPPaintStroke, start_index: int):
-	work_queue.append(_line_mix.bind(e, s, start_index))
+	work_queue.append(_line_mix.bind(e, s, s, start_index))
 
 func render_stroke(e: NPTerrainStamp, s: NPPaintStroke):
 	work_queue.append(_stroke_mix.bind(e, s))
@@ -556,7 +560,7 @@ func _image_mix(inverse_transform: Transform3D, e: NPTerrainGroup) -> void:
 	var uset := gpu.uniform_set_create([source_uni, sampler.uniform, output_uni], shader, 0)
 	_add_job(shader, uset, job_size, input_bytes)
 
-func _line_mix(e: NPTerrainGroup, stroke: NPPaintStroke, start: int = 0) -> void:
+func _line_mix(e: NPTerrainGroup, stroke_start: NPPaintStroke, stroke_end: NPPaintStroke, start: int = 0) -> void:
 	var out_size: Vector2i
 	var shader: RID
 	var output: RID
@@ -571,27 +575,35 @@ func _line_mix(e: NPTerrainGroup, stroke: NPPaintStroke, start: int = 0) -> void
 	else:
 		push_error('Cannot render line for this element: ', e.name)
 		return
-	var from := stroke.points[start]
-	var to := stroke.points[start + 1]
+	var from := stroke_start.points[start]
+	var to := stroke_start.points[start + 1]
 
 	var push_constants := PackedByteArray()
-	push_constants.resize(48)
-	#print('::', stroke.color.r)
-	push_constants.encode_float(0, stroke.color.r)
-	push_constants.encode_float(4, stroke.color.g)
-	push_constants.encode_float(8, stroke.color.b)
-	push_constants.encode_float(12, stroke.color.a)
+	push_constants.resize(80)
+	#print('::', stroke_start.color.r)
+	push_constants.encode_float(0, from.x)
+	push_constants.encode_float(4, from.y)
+	push_constants.encode_float(8, to.x)
+	push_constants.encode_float(12, to.y)
 	
-	push_constants.encode_float(16, from.x)
-	push_constants.encode_float(20, from.y)
-	push_constants.encode_float(24, to.x)
-	push_constants.encode_float(28, to.y)
+	push_constants.encode_float(16, stroke_start.color.r)
+	push_constants.encode_float(16+4, stroke_start.color.g)
+	push_constants.encode_float(16+8, stroke_start.color.b)
+	push_constants.encode_float(16+12, stroke_start.color.a)
 	
-	push_constants.encode_float(32, stroke.radius)
-	push_constants.encode_float(36, stroke.attenuation)
+	push_constants.encode_float(16+16, stroke_start.radius)
+	push_constants.encode_float(16+20, stroke_start.attenuation)
 	
-	push_constants.encode_u32(40, out_size.x)
-	push_constants.encode_u32(44, out_size.y)
+	push_constants.encode_float(48, stroke_end.color.r)
+	push_constants.encode_float(48+4, stroke_end.color.g)
+	push_constants.encode_float(48+8, stroke_end.color.b)
+	push_constants.encode_float(48+12, stroke_end.color.a)
+	
+	push_constants.encode_float(48+16, stroke_end.radius)
+	push_constants.encode_float(48+20, stroke_end.attenuation)
+	
+	push_constants.encode_u32(72, out_size.x)
+	push_constants.encode_u32(76, out_size.y)
 	
 	var output_uniform := _image_uniform(output, 0)
 	var uset := gpu.uniform_set_create([output_uniform], shader, 0)

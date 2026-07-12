@@ -5,25 +5,30 @@ layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 layout(rgba32f, set = 0, binding = 0) uniform restrict image2D result;
 
 layout(push_constant, std430) uniform Line {
-	vec4 color;
 	vec2 start, end;
+	vec4 color;
 	float radius, attenuation;
+
+	vec4 color2;
+	float radius2, attenuation2;
+
 	uvec2 result_size;
 } line;
 
-// Stolen from https://stackoverflow.com/questions/849211/shortest-distance-between-a-point-and-a-line-segment
-float distance_from_line(vec2 coords, vec2 start, vec2 end) {
+// Derived from https://stackoverflow.com/questions/849211/shortest-distance-between-a-point-and-a-line-segment
+vec2 distance_from_line(vec2 coords, vec2 start, vec2 end) {
 	vec2 relative_end = end - start;
 	vec2 relative_point = vec2(coords) - start;
 
 	if (length(relative_end) == 0) {
-		return length(relative_point);
+		return vec2(length(relative_point), 0);
 	}
 
 	float lsq = dot(relative_end, relative_end);
 	float D = clamp(dot(relative_end, relative_point)/lsq, 0., 1.);
 	vec2 proj = D*relative_end;
-	return length(relative_point - proj);
+	// Return the length from any point on the line, and a bound [0, 1] indicating which point along the line is closest
+	return vec2(length(relative_point - proj), D);
 }
 
 float get_weight(float distance, float radius, float attenuation) {
@@ -35,9 +40,14 @@ float get_weight(float distance, float radius, float attenuation) {
 
 void main() {
 	ivec2 coords = ivec2(gl_GlobalInvocationID.xy);
-	float distance = distance_from_line(coords, line.start, line.end);
+	vec2 dm = distance_from_line(coords, line.start, line.end);
+	float distance = dm.x;
 
-	float factor = line.color.a*get_weight(distance, line.radius, line.attenuation);
+	float radius = mix(line.radius, line.radius2, dm.y);
+	float attenuation = mix(line.attenuation, line.attenuation2, dm.y);
+	vec4 color = mix(line.color, line.color2, dm.y);
+
+	float factor = color.a*get_weight(distance, radius, attenuation);
 	float start_factor = line.color.a*get_weight(length(coords-line.start), line.radius, line.attenuation);
 
 	vec4 old = imageLoad(result, coords);
@@ -49,7 +59,7 @@ void main() {
 		if(c_factor > 0) {
 			f = factor/c_factor;
 		}
-		vec3 out_color = mix(old.rgb, line.color.rgb, clamp(f, 0, 1));
+		vec3 out_color = mix(old.rgb, color.rgb, clamp(f, 0, 1));
 		imageStore(
 			result, coords, 
 			vec4(out_color, clamp(alpha_old + factor, 0, 1))

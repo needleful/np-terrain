@@ -95,6 +95,7 @@ m3
 		- Line segments need to smoothly blend start and end properties
 			p1
 			i890
+			x
 			/Don't use the midpoint.
 		- Respect path resolution scale
 			p1
@@ -402,6 +403,9 @@ m3
 	- Stamps cannot be reconstructed if they weren't saved before closing the scene
 		p1
 		i1051
+	- Can still improve path segment blending
+		p1
+		i1055
 - Performance
 	p1
 	i20

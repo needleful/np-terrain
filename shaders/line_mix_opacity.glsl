@@ -5,11 +5,16 @@ layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 layout(r32f, set = 0, binding = 0) uniform restrict image2D opacity;
 
 layout(push_constant, std430) uniform Line {
-	vec4 color;
 	vec2 start, end;
+	vec4 color;
 	float radius, attenuation;
-	uvec2 opacity_size;
+
+	vec4 color2;
+	float radius2, attenuation2;
+
+	uvec2 result_size;
 } line;
+
 
 // Stolen from https://stackoverflow.com/questions/849211/shortest-distance-between-a-point-and-a-line-segment
 
