@@ -44,7 +44,12 @@ void main() {
 	float alpha_old = max(old.a - start_factor, 0);
 
 	if(factor > 0) {
-		vec3 out_color = mix(old.rgb, line.color.rgb, factor/(old.a + factor));
+		float f = 0.0;
+		float c_factor = old.a + factor;
+		if(c_factor > 0) {
+			f = factor/c_factor;
+		}
+		vec3 out_color = mix(old.rgb, line.color.rgb, clamp(f, 0, 1));
 		imageStore(
 			result, coords, 
 			vec4(out_color, clamp(alpha_old + factor, 0, 1))

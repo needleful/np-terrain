@@ -16,7 +16,10 @@ signal image_changed(NPTerrainElement)
 		image_changed.emit(self)
 		_notify_movement()
 
-@export var size := Vector2i(256, 256)
+@export var size := Vector2i(256, 256):
+	set(s):
+		size = s
+		_apply_size()
 @export var enabled := true:
 	set(t):
 		enabled = t
@@ -42,6 +45,13 @@ func _exit_tree() -> void:
 	var p := get_parent()
 	if p is NPHeightMap:
 		p.remove_element(self)
+
+func _apply_size():
+	if image:
+		image.resize(size.x, size.y, Image.INTERPOLATE_BILINEAR)
+		_convert_raw()
+		image_changed.emit(self)
+		_notify_movement()
 
 func _get_format() -> Image.Format:
 	return Image.FORMAT_RGBAF

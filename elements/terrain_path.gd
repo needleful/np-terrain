@@ -74,7 +74,7 @@ func _ready():
 	_add_to_heightmap()
 
 func _notification(what: int) -> void:
-	if what == NOTIFICATION_TRANSFORM_CHANGED:
+	if what == NOTIFICATION_TRANSFORM_CHANGED or what == NOTIFICATION_VISIBILITY_CHANGED:
 		path_changed.emit(self)
 
 func _get_property_list() -> Array[Dictionary]:

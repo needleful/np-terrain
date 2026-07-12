@@ -124,6 +124,5 @@ void main() {
 		result = terrain_height - stamp_height;
 	}
 
-	imageStore(output_image, coords, vec4(mix(terrain_height, result, color.g), vec3(0)));
-	//*/
+	imageStore(output_image, coords, vec4(mix(terrain_height, result, clamp(color.g, 0, 1)), vec3(0)));
 }

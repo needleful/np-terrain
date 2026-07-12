@@ -61,30 +61,37 @@ m3
 		- Draw line segments directly onto the heightmap
 			p1
 			i272
+			x
 		- Parameters
 			p1
 			i273
 			- Falloff
 				p1
 				i274
+				x
 			- Blend
 				p1
 				i275
+				x
 			- Opacity
 				p1
 				i276
+				x
 			- Noise
 				p1
 				i277
 			- Radius
 				p1
 				i278
+				x
 				- Dictates how many segments are drawn
 					p1
 					i279
+					x
 		- Respect heightmap scale
 			p1
 			i889
+			x
 		- Line segments need to smoothly blend start and end properties
 			p1
 			i890
@@ -92,6 +99,7 @@ m3
 		- Respect path resolution scale
 			p1
 			i891
+			x
 			/Changing resolution should not affect other properties in world-scale.
 	- Blend modes
 		p1
@@ -134,6 +142,15 @@ m3
 	- Ability to enable and disable elements
 		p1
 		i741
+	- More tools
+		p1
+		i1052
+		- Flatten
+			p1
+			i1053
+		- Blur
+			p1
+			i1054
 - Painting
 	p1
 	i13
@@ -381,6 +398,10 @@ m3
 	- NPTerrainPath renders weird
 		p1
 		i744
+		x
+	- Stamps cannot be reconstructed if they weren't saved before closing the scene
+		p1
+		i1051
 - Performance
 	p1
 	i20

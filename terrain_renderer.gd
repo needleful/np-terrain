@@ -52,6 +52,7 @@ var stroke_height_shader: RID
 var stroke_rgba_shader: RID
 var attribute_shader: RID
 var convert_shader_rgba_rg: RID
+var debug_shader_rgba_height: RID
 
 var heightmap_rendering := true
 var holes_rendering := true
@@ -139,6 +140,7 @@ func _load_shaders():
 	stroke_rgba_shader = _load_shader('res://addons/np-terrain/shaders/stroke_mix_rgba.glsl')
 	line_rgba_shader = _load_shader('res://addons/np-terrain/shaders/line_mix_rgba.glsl')
 	convert_shader_rgba_rg = _load_shader('res://addons/np-terrain/shaders/convert_rgba_rg32.glsl')
+	debug_shader_rgba_height = _load_shader('res://addons/np-terrian/shaders/debug_height_rgba.glsl')
 
 func _check_size(output_resolution: Vector2i):
 	if size != output_resolution:
@@ -228,8 +230,9 @@ func _begin_path(e: NPTerrainPath):
 		end = start
 	var stroke := NPPaintStroke.new()
 	var t := e.global_transform
-	var inv := e.get_heightmap().global_transform.inverse().scaled_local(
-		Vector3(e.resolution, 1, e.resolution))
+	var h := e.get_heightmap()
+	var inv := h.global_transform.inverse().scaled_local(
+		Vector3(e.resolution/h.terrain_scale, 1, e.resolution/h.terrain_scale))
 	var hsize := Vector2(e.result_size)/2
 	var point_count := points.size() - 1
 	if e.debug_point_count >= 0:
@@ -255,11 +258,19 @@ func convert_path(e: NPTerrainPath):
 func _convert_path(e: NPTerrainPath):
 	if e.converted_result:
 		_free_cached(e.converted_result)
-	e.converted_result = _local_texture(RenderingDevice.DATA_FORMAT_R32G32_SINT, e.result_size)
+	e.converted_result = _local_texture(RenderingDevice.DATA_FORMAT_R32G32_SFLOAT, e.result_size)
 	var rgba := _image_uniform(e.result_image, 0)
 	var rg := _image_uniform(e.converted_result, 1)
 	var uset := gpu.uniform_set_create([rgba, rg], convert_shader_rgba_rg, 0)
 	_add_job(convert_shader_rgba_rg, uset, e.result_size)
+
+#func debug_heightmap_path(e: NPTerrainPath):
+	#work_queue.append(_debug_heightmap_path.bind(e))
+#
+#func _debug_heightmap_path(e: NPTerrainPath):
+	#if e.converted_result:
+		#_free_cached(e.converted_result)
+	#e.converted_result = _local_texture(RenderingDevice.DATA_FORMAT_RGBA, e.result_size)
 
 func render_heightmap_path(inverse_transform: Transform3D, e: NPTerrainPath):
 	work_queue.append(_image_mix.bind(inverse_transform, e))
@@ -713,7 +724,8 @@ func _free_shaders():
 		reset_shader, hole_reset_shader, heightmap_shader, 
 		hole_shader, normals_shader, collider_shader,
 		line_shader, stroke_height_shader, stroke_rgba_shader,
-		reset_rgba_shader, attribute_shader
+		reset_rgba_shader, attribute_shader, debug_shader_rgba_height,
+		convert_shader_rgba_rg
 	]:
 		if s:
 			gpu.free_rid(s)

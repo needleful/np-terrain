@@ -286,6 +286,7 @@ func _compute_complete():
 func _save_element(e: NPTerrainGroup) -> bool:
 	if e is NPTerrainStamp:
 		if not e.result_image:
+			print('No new image: ', e.name)
 			return false
 		var bytes := renderer.get_local_texture(e.result_image)
 		if bytes.is_empty():
@@ -295,7 +296,10 @@ func _save_element(e: NPTerrainGroup) -> bool:
 		e.image = Image.create_from_data(s.x, s.y, false, e._get_format(), bytes)
 		e.strokes.clear()
 		renderer.free_result(e)
-		var path := '%s/terrain_stamps/stamp_%s_%d.res' % [_get_output_folder(), e.name, hash(e.get_path())]
+		var f := '%s/terrain_stamps' % _get_output_folder()
+		if not DirAccess.dir_exists_absolute(f):
+			DirAccess.make_dir_recursive_absolute(f)
+		var path := '%s/stamp_%s_%d.res' % [f, e.name, hash(e.get_path())]
 		var err := ResourceSaver.save(e.image, path)
 		if err == OK:
 			e.image = ResourceLoader.load(path, 'Image', ResourceLoader.CACHE_MODE_REPLACE)
@@ -407,7 +411,7 @@ func _add_meshes():
 	var start := (global_transform.origin - size/2 + msize/2 - Vector3(0.5, 0, 0.5))*tscale
 	msize *= tscale
 	var mesh_count := output_resolution/mesh_size
-	msize.y = 1024
+	msize.y = output_resolution.x
 	for x in mesh_count.x:
 		for y in mesh_count.y:
 			var p := Vector3(x, 0, y)*msize + start
@@ -432,7 +436,7 @@ func _add_element_children(result: Elements, node):
 			result.add_attribute_editor(c)
 		elif c is NPTerrainStamp:
 			result.height_edit.append(c)
-		elif c is NPTerrainPath:
+		elif c is NPTerrainPath and c.visible:
 			match c.mode:
 				NPTerrainPath.Mode.HeightMap:
 					result.height_edit.append(c)
