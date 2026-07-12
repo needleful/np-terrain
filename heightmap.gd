@@ -351,9 +351,9 @@ func _get_output_folder() -> String:
 	return ProjectSettings.get_setting('np_terrain/output', '_npt_output')
 
 func _save_resource(it: Resource, p_name: String):
-	var dir := 'res://%s' % _get_output_folder()
+	var dir := 'res://%s/results' % _get_output_folder()
 	if not DirAccess.dir_exists_absolute(dir):
-		DirAccess.make_dir_absolute(dir)
+		DirAccess.make_dir_recursive_absolute(dir)
 	var path := '%s/%s_%s.res' % [dir, name, p_name]
 	ResourceSaver.save(it, path)
 	print('Saving to ', path)
