@@ -98,8 +98,7 @@ class CachedSampler:
 		c.sampler = _create_sampler(gpu)
 		c.texture = gpu.texture_create(fmt, RDTextureView.new(), [data])
 		if not c.sampler or not c.texture:
-			print_debug('Could not convert image: ', p_img.resource_path)
-			print_stack()
+			push_error('Could not convert image: ', p_img.resource_path)
 		return c
 	
 	static func from_texture_rid(texture: RID, gpu: RenderingDevice) -> CachedSampler:
@@ -119,6 +118,8 @@ var sampler_cache: Dictionary[Image, CachedSampler]
 var work_queue: Array[Callable]
 
 func _init(p_gpu: RenderingDevice):
+	#print_debug('Renderer created')
+	#print_stack()
 	gpu = p_gpu
 	main_device = RenderingServer.get_rendering_device()
 	heightmap_rendering = false
@@ -716,6 +717,9 @@ func _buffer_uniform(p_buffer: RID, bind: int) -> RDUniform:
 	return uniform
 
 func destroy():
+	work_queue.clear()
+	RenderingServer.force_sync()
+	#print_debug('Renderer destroyed')
 	_free_buffers()
 	_free_shaders()
 	if gpu != main_device:

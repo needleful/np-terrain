@@ -84,18 +84,18 @@ var normals_rd: Texture2DRD
 var holes_rd: Texture2DRD
 var attributes_rd: Dictionary[StringName, Texture2DRD]
 
-func _enter_tree() -> void:
-	renderer = TerrainRenderer.new(RenderingServer.get_rendering_device())
-
-func _ready():
+func _enter_tree():
+	_update_materials(false)
 	if not renderer:
 		renderer = TerrainRenderer.new(RenderingServer.get_rendering_device())
+	if Engine.is_editor_hint():
+		_recompute_all.call_deferred()
+
+func _ready():
 	_add_meshes()
-	if not Engine.is_editor_hint():
-		print('Recomputing...')
-	_recompute_all()
 
 func _exit_tree():
+	_update_materials(false)
 	if renderer:
 		var _elem = get_elements()
 		for e in _elem.height_edit:
@@ -363,11 +363,12 @@ func _clear_meshes():
 	for m in meshes.get_children():
 		m.queue_free()
 
-func _update_materials():
+func _update_materials(use_rd := true):
 	var heightmap: Texture2D
 	var normals: Texture2D
 	var holes: Texture2D
-	if renderer.heightmap_out:
+	print_debug('Update materials: ', ('use RD' if use_rd else 'use Results'))
+	if use_rd and renderer.heightmap_out:
 		if not heightmap_rd:
 			heightmap_rd = Texture2DRD.new()
 		heightmap_rd.texture_rd_rid = renderer.heightmap_out.main
@@ -385,12 +386,17 @@ func _update_materials():
 		normals = result_normal_map
 		holes = result_hole_map
 	for at in attributes:
-		if at not in attributes_rd:
-			attributes_rd[at] = Texture2DRD.new()
-		if at in renderer.attributes_out:
-			attributes_rd[at].texture_rd_rid = renderer.attributes_out[at].main
+		var texture: Texture2D
+		if use_rd:
+			if at not in attributes_rd:
+				attributes_rd[at] = Texture2DRD.new()
+			if at in renderer.attributes_out:
+				attributes_rd[at].texture_rd_rid = renderer.attributes_out[at].main
+			texture = attributes_rd[at]
+		else:
+			texture = attributes[at]
 		if at in mesh_shader_remap:
-			mesh_material.set_shader_parameter(mesh_shader_remap[at], attributes_rd[at])
+			mesh_material.set_shader_parameter(mesh_shader_remap[at], texture)
 	mesh_material.set_shader_parameter('inverse_scale', 1.0/terrain_scale)
 	mesh_material.set_shader_parameter('heightmap', heightmap)
 	mesh_material.set_shader_parameter('normals', normals)
