@@ -11,6 +11,20 @@ layout(push_constant, std430) uniform Stroke {
 	uint blend_mode;
 } stroke;
 
+vec4 blur(ivec2 coords) {
+	vec4 sum = vec4(0);
+	ivec2 start = coords - ivec2(4);
+
+	for(int x = 0; x < 9; x++) {
+		for(int y = 0; y < 9; y++) {
+			ivec2 uv = start + ivec2(x, y);
+			sum += imageLoad(source, uv);
+		}
+	}
+
+	return sum/81.0;
+}
+
 void main() {
 	ivec2 coords = ivec2(gl_GlobalInvocationID.xy);
 	vec4 result;
@@ -33,6 +47,10 @@ void main() {
 	}
 	else if(stroke.blend_mode == 5) {
 		result = original - stroke.color;
+	}
+	else if(stroke.blend_mode == 6) {
+		result = blur(coords);
+		result.g = clamp(result.g, 0.0, 1.0);
 	}
 
 	imageStore(

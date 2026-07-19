@@ -134,12 +134,15 @@ m3
 	- Resize heightmaps
 		p1
 		i600
+		x
 		- By scaling up image
 			p1
 			i601
+			x
 		- By scaling the canvas area
 			p1
 			i602
+			x
 	- Ability to enable and disable elements
 		p1
 		i741
@@ -152,6 +155,7 @@ m3
 		- Blur
 			p1
 			i1054
+			x
 - Painting
 	p1
 	i13
@@ -392,6 +396,7 @@ m3
 	- Breaks when switching tabs
 		p1
 		i534
+		x
 		/_enter_tree, _exit_tree, and _ready
 	- Strange behavior when paint stroke goes near itself
 		p1
@@ -406,6 +411,9 @@ m3
 	- Can still improve path segment blending
 		p1
 		i1055
+	- Duplicate preview mesh when duplicated stamp node
+		p1
+		i1204
 - Performance
 	p1
 	i20
@@ -636,9 +644,11 @@ m3
 - Today's agenda:
 	p1
 	i735
+	x
 	- Paths
 		p1
 		i736
+		x
 		- Two stroke properties, lerped
 			p1
 			i737
@@ -654,21 +664,27 @@ m3
 		- Heightmaps
 			p1
 			i746
+			x
 			- Fix weird alpha issues
 				p1
 				i748
+				x
 			- Fix bug when intersecting zero
 				p1
 				i749
+				x
 		- Attributes
 			p1
 			i747
+			x
 		- Fix start and end point interpoation
 			p1
 			i750
+			x
 			- make start_factor read the starting attenuation and radius, not the current one
 				p1
 				i751
+				x
 	- Fix the one billion errors at startup
 		p1
 		i742
@@ -677,6 +693,3 @@ m3
 		p1
 		i743
 		x
-- New Task
-	p1
-	i745

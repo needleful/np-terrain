@@ -8,7 +8,8 @@ enum BlendMode {
 	Min,
 	Max,
 	Erase,
-	Subtract
+	Subtract,
+	Blur
 }
 
 var box_mesh := BoxMesh.new()
@@ -70,9 +71,11 @@ func _create_meshes():
 	if not is_instance_valid(preview_box):
 		preview_box = MeshInstance3D.new()
 		preview_box.mesh = box_mesh
+		preview_box.add_to_group('_npt_preview')
 	if not is_instance_valid(preview_paint):
 		preview_paint = MeshInstance3D.new()
 		preview_paint.mesh = paint_mesh
+		preview_paint.add_to_group('_npt_preview')
 
 func paint(camera: Camera3D, event: InputEventMouse) -> bool:
 	drag_preview_position(camera, event.position)
