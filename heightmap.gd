@@ -367,7 +367,6 @@ func _update_materials(use_rd := true):
 	var heightmap: Texture2D
 	var normals: Texture2D
 	var holes: Texture2D
-	print_debug('Update materials: ', ('use RD' if use_rd else 'use Results'))
 	if use_rd and renderer.heightmap_out:
 		if not heightmap_rd:
 			heightmap_rd = Texture2DRD.new()
