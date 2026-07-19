@@ -414,6 +414,10 @@ m3
 	- Duplicate preview mesh when duplicated stamp node
 		p1
 		i1204
+	- Improve blur kernel
+		p1
+		i1205
+		/Instead of blending the same blur, have low opacity reduce blur radius/strenght
 - Performance
 	p1
 	i20

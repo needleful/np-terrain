@@ -46,6 +46,7 @@ func _disable_plugin() -> void:
 	preview_box = _destroy(preview_box)
 	element_widget = _destroy(element_widget)
 	preview_paint = _destroy(preview_paint)
+	get_tree().call_group('_npt_preview', 'queue_free')
 
 func _handles(object: Object) -> bool:
 	return element_widget and object is NPTerrainGroup
@@ -173,8 +174,12 @@ func track(n: Node3D):
 	_on_editing_changed()
 
 func _reparent(child: Node3D, parent: Node3D):
-	if child.get_parent():
-		child.get_parent().remove_child(child)
+	var old_p := child.get_parent()
+	if old_p:
+		old_p.remove_child(child)
+		for c in old_p.get_children():
+			if c.is_in_group('_npt_preview'):
+				c.queue_free()
 	parent.add_child(child)
 	child.transform = Transform3D()
 
