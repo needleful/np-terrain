@@ -86,10 +86,10 @@ var attributes_rd: Dictionary[StringName, Texture2DRD]
 
 func _enter_tree():
 	_update_materials(false)
-	if not renderer:
-		renderer = TerrainRenderer.new(RenderingServer.get_rendering_device())
 	if Engine.is_editor_hint():
 		_recompute_all.call_deferred()
+		if not renderer:
+			renderer = TerrainRenderer.new(RenderingServer.get_rendering_device())
 
 func _ready():
 	_add_meshes()
@@ -200,6 +200,7 @@ func _recompute_all():
 			_sub_compute_attrib(_elements, inverse_transform, attr)
 		_sub_compute_height(_elements, inverse_transform)
 		_sub_compute_holes(_elements, inverse_transform)
+		_sub_compute_colliders()
 		_compute_complete.call_deferred()
 
 func _recompute_attribute(attr: StringName):
@@ -216,12 +217,14 @@ func _recompute_heightmap():
 	if _compute_start() and not renderer.heightmap_rendering:
 		#print('_recompute_heightmap')
 		_sub_compute_height(get_elements(), get_inverse_transform())
+		_sub_compute_colliders()
 		_compute_complete.call_deferred()
 
 func _recompute_holes():
 	if _compute_start() and not renderer.holes_rendering:
 		#print('_recompute_holes')
 		_sub_compute_holes(get_elements(), get_inverse_transform())
+		_sub_compute_colliders()
 		_compute_complete.call_deferred()
 
 func _update_image(e: NPTerrainElement):
@@ -262,6 +265,8 @@ func _sub_compute_holes(_elements: Elements, inverse_transform: Transform3D):
 	renderer.begin_holes(output_resolution)
 	for hole in _elements.holes:
 		renderer.render_stamp(inverse_transform, hole)
+
+func _sub_compute_colliders():
 	renderer.create_colliders(1.0/terrain_scale)
 
 func _sub_compute_attrib(_elements: Elements, inverse_transform: Transform3D, attr: StringName):
@@ -409,7 +414,6 @@ func _add_meshes():
 		add_child(meshes)
 	else:
 		meshes = $_meshes
-	_update_materials()
 	var tscale := Vector3(terrain_scale, 1, terrain_scale)
 	var size := Vector3(output_resolution.x, 0, output_resolution.y)
 	var msize := Vector3(mesh_size.x, 0, mesh_size.y)

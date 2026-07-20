@@ -76,7 +76,6 @@ func _create_meshes():
 	if not is_instance_valid(preview_paint):
 		preview_paint = MeshInstance3D.new()
 		preview_paint.mesh = paint_mesh
-		preview_paint.add_to_group('_npt_preview')
 
 func paint(camera: Camera3D, event: InputEventMouse) -> bool:
 	drag_preview_position(camera, event.position)

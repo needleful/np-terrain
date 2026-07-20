@@ -102,6 +102,9 @@ m3
 			i891
 			x
 			/Changing resolution should not affect other properties in world-scale.
+		- Enable blend modes for height map
+			p1
+			i1206
 	- Blend modes
 		p1
 		i33
