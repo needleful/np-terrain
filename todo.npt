@@ -700,3 +700,37 @@ m3
 		p1
 		i743
 		x
+- Renderer
+	p1
+	i1372
+	- Generate low-resolution heightmaps
+		p1
+		i1373
+	- Multiple materials
+		p1
+		i1374
+		- Up-close terrain
+			p1
+			i1375
+		- Far away shader
+			p1
+			i1376
+	- Smaller terrain tile mesh (32x32)
+		p1
+		i1377
+		x
+	- Scripting to arrange meshes
+		p1
+		i1378
+		- As many meshes as needed to render 8km around the camera at all times
+			p1
+			i1379
+	- Edge cases
+		p1
+		i1380
+		- How many divisions are required?
+			p1
+			i1381
+			- Dictates number of materials and mipmaps
+				p1
+				i1382
