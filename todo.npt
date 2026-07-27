@@ -701,7 +701,7 @@ m3
 		i743
 		x
 - Renderer
-	p2
+	p1
 	i1372
 	- Generate low-resolution heightmaps
 		p2
@@ -742,3 +742,12 @@ m3
 				p1
 				i1382
 				x
+	- Improve behavior at seams
+		p1
+		i1383
+		- Smooth blending between high and low resolution at boundaries?
+			p1
+			i1384
+			- Would require generating texture with mip-maps
+				p1
+				i1385
