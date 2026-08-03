@@ -293,6 +293,7 @@ func _sub_compute_colliders():
 	renderer.create_colliders(1.0/terrain_scale)
 
 func _sub_compute_attrib(_elements: Elements, inverse_transform: Transform3D, attr: StringName):
+	print("rendering: ", attr)
 	for el: NPTerrainGroup in _elements.get_attribute_editors(attr):
 		if el is NPAttributeStamp:
 			renderer.render_stamp(inverse_transform, el)

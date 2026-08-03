@@ -42,11 +42,11 @@ layout(r32f, set = 0, binding = 1) uniform restrict image2D height_map;
 layout(rg16f, set=0, binding = 2) uniform restrict image2D normal_map;
 layout(push_constant, std430) uniform Parameters {
 	// Horizontal scale
-	float scale;	// default = .15;
+	float scale;	// default = .06;
 
 	// The strength of the erosion effect, affecting the magnitude of all octaves,
 	// and indirectly affecting the directions of the gullies as a result.
-	float strength;	// default = 0.22;
+	float strength;	// default = 20.0;
 
 	// The magnitude of the gullies as a weight value from 0 to 1.
 	// A value of 0 can sharpen peaks and valleys but feature virtually no gullies.
@@ -69,7 +69,7 @@ layout(push_constant, std430) uniform Parameters {
 	//  w: Multiplier applied to each subsequent gully octave after the first.
 	//     Setting it to the same value as the erosion lacunarity will produce
 	//     consistent rounding of all octaves.
-	vec4 rounding;	// default = vec4(0.1, 0.0, 0.1, 2.0);
+	vec4 rounding;	// default = vec4(2.0, 0.5, 0.1, 1.5);
 
 	// Control over how far away from ridges/creases the erosion takes effect.
 	//  x: Onset used on the initial height function.
@@ -77,13 +77,6 @@ layout(push_constant, std430) uniform Parameters {
 	//  z: RidgeMap-specific onset used on the initial height function.
 	//  w: RidgeMap-specific onset used on each gully octave.
 	vec4 onset;	// default = vec4(0.7, 1.25, 2.8, 1.5);
-
-	// Control over the assumed slope of the initial height function.
-	// In practise, assuming a slope can work better than using the input slope,
-	// since the final terrain can be shaped quite differently than the input.
-	//  x: An assumed slope value to override the actual slope.
-	//  y: The amount (from 0 to 1) to override the actual slope.
-	vec2 assumed_slope;	// default = vec2(0.7, 1.0);
 
 	// Gullies are based on stripes within Voronoi-like cells in the Phacelle noise
 	// function. The cell scale parameter controls the sizes of the cells relative
@@ -102,7 +95,7 @@ layout(push_constant, std430) uniform Parameters {
 	float normalization; // default = 0.5;
 	// The lacunarity controls the frequency (the inverse
 	// horizontal scale) of each octave relative to the last.
-	float lacunarity;	// default = 2.0;
+	float lacunarity;	// default = 1.5;
 	// The gain controls the magnitude (the vertical
 	// scale) of each octave relative to the last.
 	float gain;	// default = 0.5;
@@ -271,9 +264,7 @@ vec4 ErosionFilter(in vec2 p, float height, vec2 normal, float fadeTarget) {
 	float ridgeMapCombiMask = ease_out(slope * param.onset.z);
 	float ridgeMapFadeTarget = fadeTarget;
 	
-	// Deteriming the strength of the initial slope used for gully directions
-	// based on the specified mix of the actual slope and an assumed slope.
-	vec2 gullyNormal = mix(normal, normal * param.assumed_slope.x, param.assumed_slope.y);
+	vec2 gullyNormal = normal;
 
 	for (int i = 0; i < param.octaves; i++) {
 		// Calculate and add gullies to the height and slope.
@@ -329,7 +320,7 @@ void main() {
 	vec2 normal = imageLoad(normal_map, p).rg;
 	vec2 uv = vec2(p)/vec2(target.size);
 	
-	float fadeTarget = 1.0;
+	float fadeTarget = clamp(height/40, -1, 1);
 
 	vec4 erosion = ErosionFilter(uv, height, normal, fadeTarget);
 	imageStore(height_map, p, vec4(erosion.x));

@@ -703,6 +703,9 @@ func _build_normals() -> void:
 	resources_to_free.append(uset)
 
 func _add_job(shader: RID, uniform_set:RID, p_size: Vector2i, push_constant:PackedByteArray = []) -> void:
+	if not shader:
+		push_error('No shader!')
+		print_stack()
 	var pipeline := gpu.compute_pipeline_create(shader)
 	var compute_list := gpu.compute_list_begin()
 	gpu.compute_list_bind_compute_pipeline(compute_list, pipeline)
@@ -796,17 +799,23 @@ func _build_push_constants(constants: Array) -> PackedByteArray:
 	for val in constants:
 		bytesize += a
 		a = _alignment(val)
-		bytesize += (bytesize % a)
+		var offset := bytesize % a
+		if offset:
+			bytesize += a - offset
 	# All push constants are padded to a multiple of 16 bytes
-	bytesize += bytesize % 16
+	bytesize += a
+	if bytesize % 16:
+		bytesize += 16 - (bytesize % 16)
 	b.resize(bytesize)
 	var index := 0
 	a = 0
 	for val in constants:
 		index += a
 		a = _alignment(val)
-		index += index % a
-		# print('~~ %s [%d]' % [str(val), index])
+		var offset := index % a
+		if offset:
+			index += a - offset
+		#print('~~ %s [%d]' % [str(val), index])
 		_encode(b, index, val)
 	return b
 
