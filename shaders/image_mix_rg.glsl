@@ -22,7 +22,33 @@ layout(push_constant, std430) uniform Source {
 	uint blend_mode;
 } source;
 
-#define SUPPORT_SIZE 3
+
+// Derived from https://github.com/visionworkbench/
+// Licensed under the Apache License, Version 2.0
+vec4 textureBicubic(sampler2D stamp, vec2 uv) {
+	ivec2 ts = textureSize(stamp, 0);
+	vec2 its = 1.0/vec2(ts);
+	vec2 ij = floor(ts*uv);
+	vec2 n = ts*uv - ij;
+	vec2[4] dv;
+	dv[0] = ((-n + 2) * n - 1) * n;
+	dv[1] = (3*n - 5) * n * n + 2;
+	dv[2] = ((-3 * n + 4) * n + 1) * n;
+	dv[3] = (n - 1) * n * n;
+
+	vec4 result = vec4(0);
+	for(int y = 0; y <= 3; y++) {
+		vec4 row = vec4(0);
+		for(int x = 0; x <= 3; x++) {
+			vec2 uv2 = (ij+vec2(x, y) - 1)*its;
+			row += texture(stamp, uv2)*dv[x].x;
+		}
+		result += row*dv[y].y;
+	}
+	return result/4.0;
+}
+
+#define SUPPORT_SIZE 4
 #define PI 3.1415926535897932385
 
 float sinc(float x) {
@@ -97,7 +123,7 @@ void main() {
 	vec2 centered = vec2(coords) - vec2(target.size/2);
 	vec3 pos = source_position(centered);
 
-	vec2 color = textureLanczos(source_sampler, pos.xz).rg;
+	vec2 color = textureBicubic(source_sampler, pos.xz).rg;
 	float terrain_height = imageLoad(output_image, coords).r;
 	float stamp_height = source.height_range.x + source.height_range.y*color.r;
 
