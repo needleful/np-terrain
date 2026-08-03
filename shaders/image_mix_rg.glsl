@@ -22,54 +22,51 @@ layout(push_constant, std430) uniform Source {
 	uint blend_mode;
 } source;
 
-// from https://stackoverflow.com/questions/13501081/efficient-bicubic-filtering-code-in-glsl
-// in turn from http://www.java-gaming.org/index.php?topic=35123.0
-vec4 cubic(float v){
-	vec4 n = vec4(1.0, 2.0, 3.0, 4.0) - v;
-	vec4 s = n * n * n;
-	float x = s.x;
-	float y = s.y - 4.0 * s.x;
-	float z = s.z - 4.0 * s.y + 6.0 * s.x;
-	float w = 6.0 - x - y - z;
-	return vec4(x, y, z, w) * (1.0/6.0);
+#define SUPPORT_SIZE 3
+#define PI 3.1415926535897932385
+
+float sinc(float x) {
+	if(x == 0.0) {
+		return 1.0;
+	}
+	else {
+		return sin(PI*x)/(PI*x);
+	}
 }
 
-vec4 textureBicubic(sampler2D stamp, vec2 uv){
+float L(float x) {
+	if(abs(x) > float(SUPPORT_SIZE)) {
+		return 0.0;
+	}
+	return sinc(x)*sinc(x/(float(SUPPORT_SIZE)));
+}
+
+float L2(vec2 v) {
+	return L(v.x)*L(v.y);
+}
+
+vec4 textureLanczos(sampler2D stamp, vec2 uv) {
 	if(uv.x < 0. || uv.y < 0. || uv.x > 1.0 || uv.y > 1.0) {
 		return vec4(0);
 	}
-	vec2 texSize = textureSize(stamp, 0);
-	vec2 invTexSize = 1.0 / texSize;
+	vec2 texSize = vec2(textureSize(stamp, 0));
+	vec4 c = vec4(0);
+	float weight = 0.0;
 
-	uv = uv * texSize - 0.5;
+	vec2 coord = uv*texSize;
+	vec2 xy = floor(coord) + 0.5;
 
+	for(int i = -SUPPORT_SIZE; i <= SUPPORT_SIZE; i++) {
+		for(int j = -SUPPORT_SIZE; j <= SUPPORT_SIZE; j++) {
+			vec2 texuv = ivec2(i, j) + xy;
 
-	vec2 fxy = fract(uv);
-	uv -= fxy;
-
-	vec4 xcubic = cubic(fxy.x);
-	vec4 ycubic = cubic(fxy.y);
-
-	vec4 c = uv.xxyy + vec2 (-0.5, +1.5).xyxy;
-
-	vec4 s = vec4(xcubic.xz + xcubic.yw, ycubic.xz + ycubic.yw);
-	vec4 offset = c + vec4 (xcubic.yw, ycubic.yw) / s;
-
-	offset *= invTexSize.xxyy;
-
-	vec4 sample0 = texture(stamp, offset.xz);
-	vec4 sample1 = texture(stamp, offset.yz);
-	vec4 sample2 = texture(stamp, offset.xw);
-	vec4 sample3 = texture(stamp, offset.yw);
-
-	float sx = s.x / (s.x + s.y);
-	float sy = s.z / (s.z + s.w);
-
-	return mix(
-		mix(sample3, sample2, sx), mix(sample1, sample0, sx)
-	, sy);
+			float w = L2(texuv - coord);
+			c += w*texture(stamp, texuv/texSize);
+			weight += w;
+		}
+	}
+	return c/weight;
 }
-
 
 vec3 source_position(vec2 coords) {
 	// Coordinates of a flat plane
@@ -100,7 +97,7 @@ void main() {
 	vec2 centered = vec2(coords) - vec2(target.size/2);
 	vec3 pos = source_position(centered);
 
-	vec2 color = textureBicubic(source_sampler, pos.xz).rg;
+	vec2 color = textureLanczos(source_sampler, pos.xz).rg;
 	float terrain_height = imageLoad(output_image, coords).r;
 	float stamp_height = source.height_range.x + source.height_range.y*color.r;
 

@@ -48,6 +48,7 @@ extends NPTerrainGroup
 @export var result_collider: HeightMapShape3D
 @export_tool_button('Save Files') var result_save_changes = _save
 @export_tool_button('Redraw') var result_redraw = _recompute_all
+@export_tool_button('Reload Shaders') var reload_shaders = _reload_shaders
 
 @onready var meshes:Node3D
 
@@ -60,6 +61,9 @@ class Elements:
 	var others: Array[NPTerrainGroup] = []
 	# Like height_edit, these have NPAttributeStamps and NPTerrainPath
 	var attributes: Dictionary[StringName, Array] = {}
+	# Effects
+	var height_effects: Array[NPTerrainEffect]
+	var attribute_effects: Array[NPTerrainEffect]
 
 	func add_attribute_editor(a: NPTerrainGroup):
 		if not a.attribute:
@@ -128,10 +132,6 @@ func add_element(t: NPTerrainGroup):
 		_con(t.path_changed, _recompute_path)
 		_con(t.mode_changed, _recompute_all)
 
-static func _con(s: Signal, c: Callable):
-	if not s.is_connected(c):
-		s.connect(c)
-
 func remove_element(t: NPTerrainGroup):
 	if t is NPTerrainElement:
 		t.image_changed.disconnect(_update_image)
@@ -150,6 +150,23 @@ func remove_element(t: NPTerrainGroup):
 	elif t is NPTerrainPath:
 		t.path_changed.disconnect(_recompute_path)
 		t.mode_changed.disconnect(_recompute_all)
+
+func add_effect(e: NPTerrainEffect):
+	_con(e.effect_changed, _recompute_all)
+	_con(e.reloaded_shader, _reload_effect_shaders)
+
+func remove_effect(e: NPTerrainEffect):
+	e.effect_changed.disconnect(_recompute_all)
+
+func _reload_shaders():
+	print('Reloading shaders...')
+	renderer.reload_main_shaders()
+	_recompute_all()
+
+func _reload_effect_shaders():
+	print('Reloading effect shaders...')
+	renderer.reload_effect_shaders()
+	_recompute_all()
 
 func _output_image(format: Image.Format) -> Image:
 	return Image.create(output_resolution.x, output_resolution.y, false, format)
@@ -191,27 +208,28 @@ func _recompute_path(path: NPTerrainPath):
 func _recompute_all():
 	if _compute_start():
 		#print('_recompute_all')
-		var _elements := get_elements()
+		var elements := get_elements()
 		var inverse_transform = get_inverse_transform()
 		for attr in attributes:
-			if not _elements.has_attribute(attr):
+			if not elements.has_attribute(attr):
 				continue
 			renderer.attrib_start_render(output_resolution, attr)
-			_sub_compute_attrib(_elements, inverse_transform, attr)
-		_sub_compute_height(_elements, inverse_transform)
-		_sub_compute_holes(_elements, inverse_transform)
+			_sub_compute_attrib(elements, inverse_transform, attr)
+		_sub_compute_height(elements, inverse_transform)
+		_sub_compute_holes(elements, inverse_transform)
 		_sub_compute_colliders()
 		_compute_complete.call_deferred()
 
 func _recompute_attribute(attr: StringName):
 	#print('Compute ', attr)
-	var _e := get_elements()
-	if not _e.has_attribute(attr):
+	var elem := get_elements()
+	if not elem.has_attribute(attr):
 		return
 	if _compute_start() and renderer.attrib_start_render(output_resolution, attr):
-		_sub_compute_attrib(_e, get_inverse_transform(), attr)
+		_sub_compute_attrib(elem, get_inverse_transform(), attr)
 		_compute_complete.call_deferred()
-	#print('$ Rendered %d items' % _e.get_attribute_editors(attr).size())
+	#print('$ Rendered %d items' % elem.get_attribute_editors(attr).size())
+	# TODO: attribute effects
 
 func _recompute_heightmap():
 	if _compute_start() and not renderer.heightmap_rendering:
@@ -249,9 +267,9 @@ func _on_stroke_finished(e: NPTerrainStamp):
 	#renderer.swap_stroke_buffers(e)
 	pass
 
-func _sub_compute_height(_elements: Elements, inverse_transform: Transform3D):
+func _sub_compute_height(elements: Elements, inverse_transform: Transform3D):
 	renderer.begin_heightmap(output_resolution)
-	for el in _elements.height_edit:
+	for el in elements.height_edit:
 		if el is NPTerrainStamp:
 			renderer.render_stamp(inverse_transform, el)
 		elif el is NPTerrainPath:
@@ -260,10 +278,15 @@ func _sub_compute_height(_elements: Elements, inverse_transform: Transform3D):
 				renderer.render_heightmap_path(get_inverse_transform(), el)
 				#print('Drawing path: ', el.name)
 	renderer.render_normals()
+	for e in elements.height_effects:
+		renderer.render_effect(e)
+	if not elements.height_effects.is_empty():
+		# re-render normals
+		renderer.render_normals()
 
-func _sub_compute_holes(_elements: Elements, inverse_transform: Transform3D):
+func _sub_compute_holes(elements: Elements, inverse_transform: Transform3D):
 	renderer.begin_holes(output_resolution)
-	for hole in _elements.holes:
+	for hole in elements.holes:
 		renderer.render_stamp(inverse_transform, hole)
 
 func _sub_compute_colliders():
@@ -439,13 +462,15 @@ func get_elements() -> Elements:
 
 func _add_element_children(result: Elements, node):
 	for c:Node in node.get_children():
+		if c is Node3D and not c.visible:
+			continue
 		if c is NPTerrainElement and not c.enabled:
 			continue
 		if c is NPAttributeStamp:
 			result.add_attribute_editor(c)
 		elif c is NPTerrainStamp:
 			result.height_edit.append(c)
-		elif c is NPTerrainPath and c.visible:
+		elif c is NPTerrainPath:
 			match c.mode:
 				NPTerrainPath.Mode.HeightMap:
 					result.height_edit.append(c)
@@ -455,5 +480,14 @@ func _add_element_children(result: Elements, node):
 			result.holes.append(c)
 		elif c is NPTerrainElement:
 			result.others.append(c)
+		elif c is NPTerrainEffect:
+			if c.mode == NPTerrainEffect.Mode.Height:
+				result.height_effects.append(c)
+			else:
+				result.attribute_effects.append(c)
 		if c is NPTerrainElement or c is NPTerrainGroup or c.is_in_group('npt_group'):
 			_add_element_children(result, c)
+
+static func _con(s: Signal, c: Callable):
+	if not s.is_connected(c):
+		s.connect(c)

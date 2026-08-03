@@ -52,6 +52,7 @@ var stroke_height_shader: RID
 var stroke_rgba_shader: RID
 var attribute_shader: RID
 var convert_shader_rgba_rg: RID
+var effect_shaders: Dictionary[String, RID]
 
 var heightmap_rendering := true
 var holes_rendering := true
@@ -339,6 +340,43 @@ func _create_colliders(inverse_scale: float):
 	_add_job(collider_shader, uset, size, bytes)
 	resources_to_free.append(uset)
 
+func load_effect_shader(path: String) -> RID:
+	if path not in effect_shaders:
+		effect_shaders[path] = _load_shader(path)
+	return effect_shaders[path]
+
+func reload_effect_shaders():
+	for e in effect_shaders:
+		var rid = effect_shaders[e]
+		if rid:
+			gpu.free_rid(rid)
+		effect_shaders[e] = _load_shader(e)
+
+func reload_main_shaders():
+	_free_main_shaders()
+	_load_shaders()
+
+func render_effect(e: NPTerrainEffect) -> bool:
+	if not (e.active and e.shader_path):
+		return false
+	var r := load_effect_shader(e.shader_path)
+	if not r:
+		push_error('Could not load shader for effect: ', e.name)
+		return false
+	work_queue.append(_render_effect.bind(e.mode, r, e.push_constants))
+	return true
+
+func _render_effect(mode: NPTerrainEffect.Mode, shader: RID, push_constants: Array):
+	if mode == NPTerrainEffect.Mode.Height:
+		var source = _buffer_uniform(input_buffer, 0)
+		var height = _image_uniform(heightmap_out.local, 1)
+		var normals = _image_uniform(normal_out.local, 2)
+		var uset = gpu.uniform_set_create([source, height, normals], shader, 0)
+		_add_job(shader, uset, size, _build_push_constants(push_constants))
+		resources_to_free.append(uset)
+	else:
+		push_error('Attribute effects not yet implemented')
+
 func free_result(e: NPTerrainGroup):
 	work_queue.append(_free_result.bind(e))
 
@@ -450,7 +488,7 @@ func _local_texture(format: RenderingDevice.DataFormat, p_size: Vector2i, bytes:
 	return gpu.texture_create(tf, RDTextureView.new(), [] if bytes.is_empty() else [bytes])
 
 func _load_shader(file: String) -> RID:
-	var shader:RDShaderFile = load(file)
+	var shader:RDShaderFile = ResourceLoader.load(file, '', ResourceLoader.CACHE_MODE_REPLACE)
 	if !shader:
 		push_error('Could not load file: ', file)
 		return RID()
@@ -709,6 +747,69 @@ func _image_uniform(p_image: RID, bind: int) -> RDUniform:
 	uniform.add_id(p_image)
 	return uniform
 
+func _alignment(val) -> int:
+	if val is float or val is int:
+		return 4
+	if val is Vector2 or val is Vector2i:
+		return 8
+	if val is Vector3 or val is Vector3i or val is Vector4 or val is Vector4i:
+		return 16
+	else:
+		push_error('Value is not supported as a push constant: ', val)
+		return 0
+
+func _encode(b: PackedByteArray, index: int, value):
+	if value is float:
+		b.encode_float(index, value)
+	elif value is int:
+		b.encode_s32(index, value)
+	elif value is Vector2:
+		b.encode_float(index, value.x) 
+		b.encode_float(index+4, value.y)
+	elif value is Vector3:
+		b.encode_float(index, value.x) 
+		b.encode_float(index+4, value.y) 
+		b.encode_float(index+8, value.z)
+	elif value is Vector4:
+		b.encode_float(index, value.x) 
+		b.encode_float(index+4, value.y) 
+		b.encode_float(index+8, value.z)
+		b.encode_float(index+12, value.w)
+	elif value is Vector2i:
+		b.encode_s32(index, value.x) 
+		b.encode_s32(index+4, value.y)
+	elif value is Vector3i:
+		b.encode_s32(index, value.x) 
+		b.encode_s32(index+4, value.y) 
+		b.encode_s32(index+8, value.z)
+	elif value is Vector4i:
+		b.encode_s32(index, value.x) 
+		b.encode_s32(index+4, value.y) 
+		b.encode_s32(index+8, value.z)
+		b.encode_s32(index+12, value.w)
+
+func _build_push_constants(constants: Array) -> PackedByteArray:
+	var b := PackedByteArray()
+	#type-check and sizing
+	var bytesize := 0
+	var a := 0
+	for val in constants:
+		bytesize += a
+		a = _alignment(val)
+		bytesize += (bytesize % a)
+	# All push constants are padded to a multiple of 16 bytes
+	bytesize += bytesize % 16
+	b.resize(bytesize)
+	var index := 0
+	a = 0
+	for val in constants:
+		index += a
+		a = _alignment(val)
+		index += index % a
+		# print('~~ %s [%d]' % [str(val), index])
+		_encode(b, index, val)
+	return b
+
 func _buffer_uniform(p_buffer: RID, bind: int) -> RDUniform:
 	var uniform := RDUniform.new()
 	uniform.uniform_type = RenderingDevice.UNIFORM_TYPE_STORAGE_BUFFER
@@ -726,6 +827,13 @@ func destroy():
 		gpu.free()
 
 func _free_shaders():
+	_free_main_shaders()
+	for s in effect_shaders.values():
+		if s:
+			gpu.free_rid(s)
+	effect_shaders.clear()
+
+func _free_main_shaders():
 	for s in [
 		reset_shader, hole_reset_shader, heightmap_shader, 
 		hole_shader, normals_shader, collider_shader,

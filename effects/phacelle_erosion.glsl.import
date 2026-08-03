@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://chr1cnli1qddv"
+path="res://.godot/imported/phacelle_erosion.glsl-73b2531cabbcd6fa9745cf3b60144a97.res"
+
+[deps]
+
+source_file="res://addons/np-terrain/effects/phacelle_erosion.glsl"
+dest_files=["res://.godot/imported/phacelle_erosion.glsl-73b2531cabbcd6fa9745cf3b60144a97.res"]
+
+[params]
+
