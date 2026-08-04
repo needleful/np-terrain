@@ -91,7 +91,7 @@ var attributes_rd: Dictionary[StringName, Texture2DRD]
 func _enter_tree():
 	_update_materials(false)
 	if Engine.is_editor_hint():
-		_recompute_all.call_deferred()
+		#_recompute_all.call_deferred()
 		if not renderer:
 			renderer = TerrainRenderer.new(RenderingServer.get_rendering_device())
 
