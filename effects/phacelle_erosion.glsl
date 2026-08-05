@@ -313,6 +313,39 @@ vec4 ErosionFilter(in vec2 p, float height, vec2 normal, float fadeTarget) {
 	return vec4(height, normal, magnitude);
 }
 
+// Steps above and below
+// Will do STEP_COUNT*4 samples of normal map
+#define STEP_COUNT 16
+// Increment to spead out samples
+// Provides better blurring, at the cost of banding in narrow spaces
+#define STEP 8.0
+// Amount to reduce distance samples by
+#define STEP_FALLOFF 0.8
+// Use estimated derivative of the normals to decide how to shape terrain
+float slopeCurve(vec2 normal, ivec2 p) {
+	float left  = 0.0;
+	float right = 0.0;
+	float up    = 0.0;
+	float down  = 0.0;
+
+	float f = 1.0;
+	for(int i = 0; i < STEP_COUNT; i++) {
+		ivec2 offset = ivec2(round(STEP*i));
+		ivec2 high = clamp(p + offset, ivec2(0), ivec2(target.size));
+		ivec2 low = clamp(p - offset, ivec2(0), ivec2(target.size));
+		// Get the slope along X and Y around P
+		left  += f * imageLoad(normal_map, ivec2(low.x,   p.y)).x;
+		right += f * imageLoad(normal_map, ivec2(high.x,  p.y)).x;
+		down  += f * imageLoad(normal_map, ivec2(p.x,   low.y)).y;
+		up    += f * imageLoad(normal_map, ivec2(p.x,  high.y)).y;
+		f *= STEP_FALLOFF;
+	}
+	// Determine if slope is pointing toward or away from P
+	vec4 dn = vec4(left, right, down, up)*vec4(-1,1,-1,1);
+	return (dn.x + dn.y + dn.z + dn.w)/STEP_COUNT;
+}
+
+
 
 void main() {
 	ivec2 p = ivec2(gl_GlobalInvocationID.xy);
@@ -320,8 +353,10 @@ void main() {
 	vec2 normal = imageLoad(normal_map, p).rg;
 	vec2 uv = vec2(p)/vec2(target.size);
 	
-	float fadeTarget = clamp(height/40, -1, 1);
+	//float fadeTarget = clamp(height/40, -1, 1);
+	float fadeTarget = clamp(slopeCurve(normal, p), -1, 1);
 
 	vec4 erosion = ErosionFilter(uv, height, normal, fadeTarget);
 	imageStore(height_map, p, vec4(erosion.x));
+	//imageStore(height_map, p, vec4(100*fadeTarget));
 }

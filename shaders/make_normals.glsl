@@ -22,9 +22,8 @@ vec2 derive(ivec2 coords) {
 	// float nextdown = at(coords + vec2(1,-1));
 	// float prevup = at(coords + vec2(1,-1));
 
-	vec3 n = normalize(
-		vec3(prev, 1.0, down)
-		- vec3(next, 1.0, up));
+	vec2 d = vec2(prev, down) - vec2(next, up);
+	vec3 n = normalize(vec3(d.x, 1.0, d.y));
 	return n.xz;
 }
 
