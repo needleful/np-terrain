@@ -44,9 +44,11 @@ float get_weight(float distance, float radius, float attenuation) {
 	return (sin(x) + 1.0)/2.0;
 }
 
-// float get_weight(float distance, float radius, float attenuation) {
-// 	return clamp(1.0 - distance/max(radius, 0.01), 0, 1);
-// }
+vec4 composite(vec4 old, vec4 color) {
+	float alpha = mix(old.a, 1.0, color.a);
+	vec3 rgb = mix(old.rgb, color.rgb, color.a/(old.a + color.a));
+	return vec4(rgb, alpha);
+}
 
 void main() {
 	ivec2 coords = ivec2(gl_GlobalInvocationID.xy);
@@ -59,11 +61,13 @@ void main() {
 	float w = get_weight(distance, radius, attenuation);
 	color.a *= w;
 
-	vec4 old = imageLoad(result, coords);
-	// Reduce alpha if the previous line segment ended nearby
-	float wstart = old.a*max(sign(old.a),get_weight(length(coords - line.start), line.radius, 1.0));
-
-	if(w > wstart) {
-		imageStore(result, coords, color);
+	if(color.a > 0) {
+		vec4 old = imageLoad(result, coords);
+		// Handle overlaps semi-properly
+		float wstart = old.a*max(sign(old.a), get_weight(length(coords - line.start), line.radius, 1.0));
+		vec4 alphaMax = mix(old, color, float(w > wstart));
+		vec4 alphaBlend = composite(old, color);
+		vec4 out_color = mix(alphaBlend, alphaMax, pow(alphaBlend.a, 0.5));
+		imageStore(result, coords, out_color);
 	}
 }

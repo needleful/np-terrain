@@ -96,6 +96,20 @@ vec3 source_position(vec2 coords) {
 	return relpos / scale + vec3(0.5, 0, 0.5);
 }
 
+vec4 blur(ivec2 coords) {
+	vec4 sum = vec4(0);
+	ivec2 start = coords - ivec2(4);
+
+	for(int x = 0; x < 9; x++) {
+		for(int y = 0; y < 9; y++) {
+			ivec2 uv = start + ivec2(x, y);
+			sum += imageLoad(output_image, uv);
+		}
+	}
+
+	return sum/81.0;
+}
+
 void main() {
 	ivec2 coords = ivec2(source.corner + gl_GlobalInvocationID.xy);
 	vec2 centered = vec2(coords) - vec2(target.size/2);
@@ -122,6 +136,9 @@ void main() {
 	}
 	else if(source.blend_mode == 5) {
 		result = vec4((original - color).rgb, 1);
+	}
+	else if(source.blend_mode == 6) {
+		result = blur(coords);
 	}
 
 	imageStore(output_image, coords,

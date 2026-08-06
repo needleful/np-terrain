@@ -28,6 +28,10 @@ var original_image := RID()
 
 var _range := Vector2i(-100, 100)
 
+func _notification(what: int):
+	if what == NOTIFICATION_VISIBILITY_CHANGED:
+		redraw_requested.emit()
+
 var latest_stroke: NPPaintStroke:
 	get: return strokes[strokes.size() - 1]
 

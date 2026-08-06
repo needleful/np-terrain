@@ -48,50 +48,18 @@ vec4 textureBicubic(sampler2D stamp, vec2 uv) {
 	return result/4.0;
 }
 
-#define SUPPORT_SIZE 4
-#define PI 3.1415926535897932385
+vec4 blur(ivec2 coords) {
+	vec4 sum = vec4(0);
+	ivec2 start = coords - ivec2(4);
 
-float sinc(float x) {
-	if(x == 0.0) {
-		return 1.0;
-	}
-	else {
-		return sin(PI*x)/(PI*x);
-	}
-}
-
-float L(float x) {
-	if(abs(x) > float(SUPPORT_SIZE)) {
-		return 0.0;
-	}
-	return sinc(x)*sinc(x/(float(SUPPORT_SIZE)));
-}
-
-float L2(vec2 v) {
-	return L(v.x)*L(v.y);
-}
-
-vec4 textureLanczos(sampler2D stamp, vec2 uv) {
-	if(uv.x < 0. || uv.y < 0. || uv.x > 1.0 || uv.y > 1.0) {
-		return vec4(0);
-	}
-	vec2 texSize = vec2(textureSize(stamp, 0));
-	vec4 c = vec4(0);
-	float weight = 0.0;
-
-	vec2 coord = uv*texSize;
-	vec2 xy = floor(coord) + 0.5;
-
-	for(int i = -SUPPORT_SIZE; i <= SUPPORT_SIZE; i++) {
-		for(int j = -SUPPORT_SIZE; j <= SUPPORT_SIZE; j++) {
-			vec2 texuv = ivec2(i, j) + xy;
-
-			float w = L2(texuv - coord);
-			c += w*texture(stamp, texuv/texSize);
-			weight += w;
+	for(int x = 0; x < 9; x++) {
+		for(int y = 0; y < 9; y++) {
+			ivec2 uv = start + ivec2(x, y);
+			sum += imageLoad(output_image, uv);
 		}
 	}
-	return c/weight;
+
+	return sum/81.0;
 }
 
 vec3 source_position(vec2 coords) {
@@ -145,6 +113,9 @@ void main() {
 	}
 	else if(source.blend_mode == 5) {
 		result = terrain_height - stamp_height;
+	}
+	else if(source.blend_mode == 6) {
+		result = blur(coords).r;
 	}
 
 	imageStore(output_image, coords, vec4(mix(terrain_height, result, clamp(color.g, 0, 1)), vec3(0)));

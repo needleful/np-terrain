@@ -266,12 +266,14 @@ vec4 ErosionFilter(in vec2 p, float height, vec2 normal, float fadeTarget) {
 	
 	vec2 gullyNormal = normal;
 
+	vec3 heightAndSlope = vec3(height, normal);
+
 	for (int i = 0; i < param.octaves; i++) {
 		// Calculate and add gullies to the height and slope.
 		vec4 phacelle = PhacelleNoise(p * freq, safe_normalize(gullyNormal), param.cell_scale, 0.25, param.normalization);
 		// Multiply with freq since p was multiplied with freq.
 		// Negate since we use slope directions that point down.
-		phacelle.zw *= freq;
+		phacelle.zw *= -freq;
 		// Amount of slope as value from 0 to 1.
 		float sloping = abs(phacelle.y);
 		
@@ -286,9 +288,7 @@ vec4 ErosionFilter(in vec2 p, float height, vec2 normal, float fadeTarget) {
 		// Fade gullies towards fadeTarget based on combiMask.
 		vec3 fadedGullies = mix(vec3(fadeTarget, 0.0, 0.0), gullies * param.gully_weight, combiMask);
 		// Apply height offset and derivative (slope) according to strength of current octave.
-		vec3 hn = fadedGullies;
-		height += hn.x * strength;
-		normal += hn.yz;
+		heightAndSlope += fadedGullies * strength;
 		magnitude += strength;
 		
 		// Update fadeTarget to include the new octave.
@@ -310,7 +310,7 @@ vec4 ErosionFilter(in vec2 p, float height, vec2 normal, float fadeTarget) {
 		roundingMult *= param.rounding.w;
 	}
 	
-	return vec4(height, normal, magnitude);
+	return vec4(heightAndSlope.x, heightAndSlope.yz, magnitude);
 }
 
 // Steps above and below
@@ -356,7 +356,9 @@ void main() {
 	//float fadeTarget = clamp(height/40, -1, 1);
 	float fadeTarget = clamp(slopeCurve(normal, p), -1, 1);
 
-	vec4 erosion = ErosionFilter(uv, height, normal, fadeTarget);
-	imageStore(height_map, p, vec4(erosion.x));
+	float localStrength = (1.0 - abs(fadeTarget));
+	vec2 n = normal;
+	vec4 erosion = ErosionFilter(uv, height, n, fadeTarget);
+	imageStore(height_map, p, vec4(erosion.x, vec3(0)));
 	//imageStore(height_map, p, vec4(100*fadeTarget));
 }
