@@ -31,12 +31,22 @@ vec2 distance_from_line(vec2 coords, vec2 start, vec2 end) {
 	return vec2(length(relative_point - proj), D);
 }
 
+#define PI 3.141592653589793
+#define HPI 1.5707963267948966
+
 float get_weight(float distance, float radius, float attenuation) {
-	return pow(
+	// -pi/2 to pi/2
+	float x = PI*pow(
 		clamp(1.0 - distance/max(radius, 0.01), 0.0, 1.0),
-		attenuation
-	);
+		1.0
+	) - HPI;
+	// Half-sine wave for smooth curves
+	return (sin(x) + 1.0)/2.0;
 }
+
+// float get_weight(float distance, float radius, float attenuation) {
+// 	return clamp(1.0 - distance/max(radius, 0.01), 0, 1);
+// }
 
 void main() {
 	ivec2 coords = ivec2(gl_GlobalInvocationID.xy);
@@ -47,22 +57,22 @@ void main() {
 	float attenuation = mix(line.attenuation, line.attenuation2, dm.y);
 	vec4 color = mix(line.color, line.color2, dm.y);
 
-	float factor = color.a*get_weight(distance, radius, attenuation);
-	float start_factor = line.color.a*get_weight(length(coords-line.start), line.radius, line.attenuation);
+	float alpha = color.a*get_weight(distance, radius, attenuation);
+	float start_alpha = line.color.a*get_weight(length(coords-line.start), line.radius, line.attenuation);
 
 	vec4 old = imageLoad(result, coords);
-	float alpha_old = max(old.a - start_factor, 0);
+	float alpha_old = max(old.a - start_alpha, 0);
 
-	if(factor > 0) {
+	if(alpha > 0) {
 		float f = 0.0;
-		float c_factor = old.a + factor;
-		if(c_factor > 0) {
-			f = factor/c_factor;
+		float c_alpha = old.a + alpha;
+		if(c_alpha > 0) {
+			f = alpha/c_alpha;
 		}
-		vec3 out_color = mix(old.rgb, color.rgb, clamp(f, 0, 1));
+		vec3 out_color = mix(color.rgb, old.rgb, clamp(f, 0, 1));
 		imageStore(
 			result, coords, 
-			vec4(out_color, clamp(alpha_old + factor, 0, 1))
+			vec4(out_color, clamp(alpha + alpha_old, 0, 1))
 		);
 	}
 	

@@ -32,11 +32,22 @@ float distance_from_line(vec2 coords, vec2 start, vec2 end) {
 	return length(relative_point - proj);
 }
 
-float get_weight(float distance) {
-	return pow(
-		clamp(1.0 - distance/max(line.radius, 0.01), 0.0, 1.0),
+#define PI 3.141592653589793
+#define HPI 1.5707963267948966
+
+float get_weight2(float distance) {
+	// -pi/2 to pi/2
+	float ndist = distance/max(line.radius, 0.01);
+	float x = PI*pow(
+		clamp(1.0 - ndist, 0.0, 1.0),
 		line.attenuation
-	);
+	) - HPI;
+	// Half-sine wave for smooth curves
+	return (sin(x) + 1.0)/2.0;
+}
+
+float get_weight(float distance) {
+	return clamp(1.0 - distance/max(line.radius, 0.01), 0, 1);
 }
 
 void main() {
