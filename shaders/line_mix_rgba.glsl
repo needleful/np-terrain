@@ -38,7 +38,7 @@ float get_weight(float distance, float radius, float attenuation) {
 	// -pi/2 to pi/2
 	float x = PI*pow(
 		clamp(1.0 - distance/max(radius, 0.01), 0.0, 1.0),
-		1.0
+		attenuation
 	) - HPI;
 	// Half-sine wave for smooth curves
 	return (sin(x) + 1.0)/2.0;
@@ -56,24 +56,14 @@ void main() {
 	float radius = mix(line.radius, line.radius2, dm.y);
 	float attenuation = mix(line.attenuation, line.attenuation2, dm.y);
 	vec4 color = mix(line.color, line.color2, dm.y);
-
-	float alpha = color.a*get_weight(distance, radius, attenuation);
-	float start_alpha = line.color.a*get_weight(length(coords-line.start), line.radius, line.attenuation);
+	float w = get_weight(distance, radius, attenuation);
+	color.a *= w;
 
 	vec4 old = imageLoad(result, coords);
-	float alpha_old = max(old.a - start_alpha, 0);
+	// Reduce alpha if the previous line segment ended nearby
+	float wstart = old.a*max(sign(old.a),get_weight(length(coords - line.start), line.radius, 1.0));
 
-	if(alpha > 0) {
-		float f = 0.0;
-		float c_alpha = old.a + alpha;
-		if(c_alpha > 0) {
-			f = alpha/c_alpha;
-		}
-		vec3 out_color = mix(color.rgb, old.rgb, clamp(f, 0, 1));
-		imageStore(
-			result, coords, 
-			vec4(out_color, clamp(alpha + alpha_old, 0, 1))
-		);
+	if(w > wstart) {
+		imageStore(result, coords, color);
 	}
-	
 }
